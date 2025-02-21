@@ -1,4 +1,4 @@
-API_KEY = "sk-1d90b54ccf6141f0b34ea40482bd46c8"
+API_KEY = ""
 MODEL_VL3 = "qwen2.5-vl-3b-instruct"
 MODEL_VL72 = "qwen2.5-vl-72b-instruct"
 MODEL_QVQ = "qvq-72b-preview"
