@@ -27,3 +27,9 @@ def test_llm_vl(init_llm_vl):
     """大模型多轮视觉调用测试"""
     assert "猫" in init_llm_vl.call("图片里有什么(中文回答)", "https://qcloud.dpfile.com/pc/52biLHyKFbBtEA4iUSAEozWShodbuvI2I68FwiotXY3GrJw0LHxnoC2W1HJHsNeU.jpg")
     assert "狗" in init_llm_vl.call("图片里有什么(中文回答)", cv2.imread("test/dog.jpg"))
+
+def test_llm_clear(init_llm_chat):
+    """llm类clear_messages方法测试"""
+    init_llm_chat.call("1+1等于几")
+    init_llm_chat.clear_messages()
+    assert 1 == len(init_llm_chat.messages)

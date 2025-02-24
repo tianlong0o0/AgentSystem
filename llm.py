@@ -28,6 +28,7 @@ class LLM:
         self.model = model
         self.api_key = api_key
         self.base_url = base_url
+        self.init_msg = init_msg
         self.messages = [{"role": "system", "content": init_msg}]
 
     def _call_llm(self) -> str:
@@ -62,9 +63,13 @@ class LLM:
         self.messages.append(new_message)
 
     def call(self, text: str, image=None) -> str:
+        """可接受格式为url或np.uint8的image"""
         self._update_messages(Role.user, text, image)
         output = self._call_llm()
         self._update_messages(Role.assistant, output)
 
         return output
+    
+    def clear_messages(self):
+        self.messages = [{"role": "system", "content": self.init_msg}]
 
