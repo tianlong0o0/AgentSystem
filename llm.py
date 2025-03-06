@@ -1,4 +1,4 @@
-from openai import OpenAI
+from openai import AsyncOpenAI
 from config import *
 from enum import Enum, unique
 import numpy as np
@@ -31,13 +31,13 @@ class LLM:
         self.init_msg = init_msg
         self.messages = [{"role": "system", "content": init_msg}]
 
-    def _call_llm(self) -> str:
-        client = OpenAI(
+    async def _call_llm(self) -> str:
+        client = AsyncOpenAI(
             api_key=self.api_key,
             base_url=self.base_url,
         )
 
-        completion = client.chat.completions.create(
+        completion = await client.chat.completions.create(
             model=self.model,
             messages=self.messages
             )
@@ -62,10 +62,10 @@ class LLM:
 
         self.messages.append(new_message)
 
-    def call(self, text: str, image=None) -> str:
+    async def call(self, text: str, image=None) -> str:
         """可接受格式为url或np.uint8的image"""
         self._update_messages(Role.user, text, image)
-        output = self._call_llm()
+        output = await self._call_llm()
         self._update_messages(Role.assistant, output)
 
         return output
