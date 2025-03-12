@@ -1,38 +1,22 @@
-import airsim
-import time
 import asyncio
 
 from config import *
-import act_node, camera_node, ood_node
+import nodes
+from drone import Drone
+import nodes.agent_node
+import nodes.camera_node
+import nodes.drone_node
 
 
-async def main(client):
+async def main():
+    drone = Drone()
     action_queue = asyncio.Queue()
     img_queue = asyncio.Queue(maxsize=1)
-    await asyncio.gather(camera_node.img_input(client, img_queue, 0.1),
-                         act_node.default(client, action_queue),
-                         ood_node.ood_stages(img_queue, action_queue))
+    await asyncio.gather(nodes.camera_node.main(drone, img_queue, 0.1),
+                         nodes.drone_node.main(drone, action_queue),
+                         nodes.agent_node.main(img_queue, action_queue))
 
 if __name__ == "__main__":
-    # 连接到AirSim模拟器
-    client = airsim.MultirotorClient()
-    client.confirmConnection()
-    client.enableApiControl(True)
-    client.armDisarm(True)
-
-    # 起飞
-    client.takeoffAsync().join()
-    client.moveToZAsync(-1, 2).join()
-    time.sleep(2)
-
-    # 执行任务
-    asyncio.run(main(client))
-    time.sleep(2)
-
-    # 降落
-    client.moveToZAsync(0, 2).join()
-    client.landAsync().join()
-    client.armDisarm(False)
-    client.enableApiControl(False)
+    asyncio.run(main())
 
 
