@@ -5,3 +5,4 @@ test_reports/
 __pycache__/
 .coverage
 test/test_delay.py
+config.py

@@ -14,8 +14,9 @@ class Role(Enum):
     assistant = "assistant"
 
 
-def encode_image(img_rgb: np.uint8) -> str:
-    image = Image.fromarray(np.uint8(img_rgb))
+def encode_image(img_bgr: np.uint8) -> str:
+    image_rgb = img_bgr[..., ::-1]
+    image = Image.fromarray(np.uint8(image_rgb))
     buffered = io.BytesIO()
     image.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')

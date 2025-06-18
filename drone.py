@@ -26,17 +26,26 @@ class Drone:
         移动至指定坐标(始终朝向移动方向)
         """
         # 获取当前位置
-        state = self.client.getMultirotorState()
-        position = state.kinematics_estimated.position
-        pos_now = [position.x_val, position.y_val, position.z_val]
+        pos_now = self.get_pos()
+        distance = np.linalg.norm(np.array(pos) - np.array(pos_now))
 
-        # 移动
+        # 计算朝向并移动
         yaw_mode = airsim.YawMode(is_rate=False, yaw_or_rate=cal_angle(pos_now, pos))
         self.client.moveToPositionAsync(pos[0], pos[1], pos[2], velocity, yaw_mode=yaw_mode)
 
         # 异步
-        distance = np.linalg.norm(np.array(pos) - np.array(pos_now))
         await asyncio.sleep(distance / velocity)
+        self.hover()
+
+    def get_pos(self) -> list:
+        """
+        获取无人机当前位置
+        """
+        state = self.client.getMultirotorState()
+        position = state.kinematics_estimated.position
+        pos = [position.x_val, position.y_val, position.z_val - 0.5]
+
+        return pos
 
     def take_off(self):
         """
@@ -68,3 +77,16 @@ class Drone:
         img_rgb = img1d.reshape(response.height, response.width, 3)
 
         return img_rgb
+    
+    def get_lidar_data(self) -> np.ndarray:
+        """
+        获取激光雷达点云数据
+
+        Returns:
+            numpy二维数组形式的点云数据(每个元素为一个点的NED坐标)
+        """
+        data = self.client.getLidarData()
+        point_cloud = np.array(data.point_cloud)
+        point_cloud = point_cloud.reshape(-1, 3)
+
+        return point_cloud
