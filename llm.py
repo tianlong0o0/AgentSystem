@@ -14,9 +14,10 @@ class Role(Enum):
     assistant = "assistant"
 
 
-def encode_image(img_bgr: np.uint8) -> str:
-    image_rgb = img_bgr[..., ::-1]
-    image = Image.fromarray(np.uint8(image_rgb))
+def encode_image(img: np.uint8, bgr_signal: bool=False) -> str:
+    if bgr_signal:
+        img = img[..., ::-1]
+    image = Image.fromarray(np.uint8(img))
     buffered = io.BytesIO()
     image.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
@@ -91,6 +92,16 @@ class LLM:
         self._update_messages(Role.assistant, output)
 
         return output
+    
+    def user_put(self, text: str):
+        """
+        放入信息但不回应
+        """
+        self._update_messages(Role.user, text)
+    
+    def del_last_message(self):
+        del(self.messages[-1])
+        del(self.messages[-1])
     
     def clear_messages(self):
         self.messages = [{"role": "system", "content": self.init_msg}]

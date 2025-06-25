@@ -1,16 +1,7 @@
 import airsim, math, asyncio
 import numpy as np
 
-
-def cal_angle(pos_now: list, pos_next: list) -> float:
-    """
-    计算两个位置坐标的方位角
-
-    Returns:
-        角度计算结果
-    """
-
-    return math.degrees(math.atan2(pos_next[1]-pos_now[1], pos_next[0]-pos_now[0]))
+from utils import cal_angle, cal_angel_index, cal_pos
 
 
 class Drone:
@@ -20,6 +11,8 @@ class Drone:
         self.client.confirmConnection()
         self.client.enableApiControl(True)
         self.client.armDisarm(True)
+
+        self.obstacle_diagram = [0] * 72 # 障碍分布图
 
     async def move_to_pos(self, pos: list, velocity: float=1.0):
         """
@@ -36,6 +29,16 @@ class Drone:
         # 异步
         await asyncio.sleep(distance / velocity)
         self.hover()
+
+    def get_facing(self) -> float:
+        """
+        获取无人机当前朝向
+        """
+        state = self.client.getMultirotorState().kinematics_estimated.orientation
+        yaw, _, _ = airsim.to_eularian_angles(state)
+        yaw = math.degrees(yaw) + 180
+
+        return yaw
 
     def get_pos(self) -> list:
         """
@@ -90,3 +93,78 @@ class Drone:
         point_cloud = point_cloud.reshape(-1, 3)
 
         return point_cloud
+    
+    def _generate_od(self, o_range: float=1.2):
+        """
+        生成障碍分布图
+
+        Args:
+            o_range:障碍物检测范围
+        """
+        obstacle_diagram = [0] * 72
+        lidar_data = self.get_lidar_data()
+
+        for point in lidar_data:
+            distance = np.linalg.norm(np.array([point[0], point[1]]))
+            if (distance < o_range) and (abs(point[2] - 0.5) < 0.5):
+                index = cal_angel_index(point)
+                obstacle_diagram[index] += 1
+                index_l = index
+                index_r = index
+                for i in range(18):
+                    index_l = 71 if (index_l == 0) else (index_l - 1)
+                    index_r = 0 if (index_r == 71) else (index_r + 1)
+                    obstacle_diagram[index_l] += 1
+                    obstacle_diagram[index_r] += 1
+
+        self.obstacle_diagram = obstacle_diagram
+
+    async def move_to_pos_oa(self, pos: list):
+        """
+        向指定坐标方向移动一步(带避障)
+        """
+        pos = self._generate_path(pos, 0.7)
+        await self.move_to_pos(pos)
+
+    def _generate_path(self, target_pos: list, step: float=1.0) -> list:
+        """
+        生成下一路径点NED坐标
+
+        Args:
+            step:无人机移动步长
+        """
+        drone_pos = self.get_pos()
+        direction = self._cal_direction(target_pos)
+        next_pos = cal_pos(drone_pos, direction, step)
+
+        return list(next_pos)
+    
+    def _cal_direction(self, target_pos: list) -> int:
+        """
+        计算无人机移动方向(角度)
+        """
+        self._generate_od()
+        drone_pos = self.get_pos()
+        ref_angel = cal_angel_index(np.array(target_pos) - np.array(drone_pos), 1)
+        
+        index = int(ref_angel / 5)
+        if self.obstacle_diagram[index] == 0:
+            direction = ref_angel
+        else:
+            count_r = 0
+            index_r = index
+            for i in range(36):
+                count_r += 1
+                index_r = 0 if (index_r == 71) else (index_r + 1)
+                if self.obstacle_diagram[index_r] == 0: break
+            count_l = 0
+            index_l = index
+            for i in range(71):
+                count_l -= 1
+                index_l = 71 if (index_l == 0) else (index_l - 1)
+                if self.obstacle_diagram[index_l] == 0: break
+            if (count_r + count_l) == 72: return None
+            else:
+                direction = (index_r * 5) if (count_r < count_l) else (index_l * 5)
+
+        return direction
