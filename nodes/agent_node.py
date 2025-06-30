@@ -11,7 +11,7 @@ from utils import check_queue
 
 model = YOLO("models/yolo11x.pt")  # 使用 YOLOv11 Extra-Large 模型
 small_llm = LLM(init_msg="你是一个执行搜救任务的人工智能助手，请根据信息判断附近是否有被困人员。")
-large_llm = LLM(model=MODEL_VL72,
+large_llm = LLM(model=MODEL_MAX_VL,
                 init_msg="你是一个执行搜救任务的人工智能助手，请根据信息判断附近是否有被困人员，如果有，请从操作库中选择需要执行的操作(每次只可选择1种操作)。")
     
 def yolo_fliter(image: np.uint8) -> tuple[np.uint8, list]:
@@ -27,7 +27,7 @@ def yolo_fliter(image: np.uint8) -> tuple[np.uint8, list]:
     image = image.copy()
     results = model(image, verbose=False)
     detected_classes = set()
-    MIN_HEIGHT = 100
+    MIN_HEIGHT = 120
     MIN_CONFIDENCE = 0.5
 
     for result in results:
@@ -94,9 +94,9 @@ async def make_decision(img_queue: asyncio.Queue, action_queue: asyncio.Queue, f
             large_llm.del_last_message()
             break
         elif "有" in answer:
-            answer = large_llm.call("请选择需要执行的操作。(可执行操作包含:'移动至被困人员处','在附近搜寻被困人员','通知总部找到被困人员','向被困人员发放紧急救援物资','安抚被困人员','继续寻找其他被困人员')", image)
+            answer = large_llm.call("请选择需要执行的操作。(可执行操作包含:'移动至被困人员处','在被困人员物品周围搜寻被困人员','通知总部找到被困人员','向被困人员发放紧急救援物资','安抚被困人员','继续寻找其他被困人员')", image)
             while True:
-                if "在附近搜寻被困人员" in answer:
+                if "在被困人员物品周围搜寻被困人员" in answer:
                     action_queue.put_nowait("seek")
                 elif "移动至被困人员处" in answer:
                     action_queue.put_nowait("moveto")

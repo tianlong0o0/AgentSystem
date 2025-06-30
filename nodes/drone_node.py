@@ -47,10 +47,9 @@ async def check_action_status(drone: drone.Drone, action_queue: asyncio.Queue, f
 async def main(drone: drone.Drone, action_queue: asyncio.Queue, feedback_queue: asyncio.Queue):
     way_points = [
                   [-38, 0, -1],
-                  [-38, -10, -1],
                   [-56.5, -46, -1],
-                  [-66.5, 0.7, -1],
-                  [-67, -0.7, -1]
+                  [-65, -0.7, -1],
+                  [-100, -0.7, -1]
                   ]  
     await drone.move_to_pos([0, 0, -1])
     signal = False

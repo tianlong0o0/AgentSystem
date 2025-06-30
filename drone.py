@@ -35,8 +35,8 @@ class Drone:
         获取无人机当前朝向
         """
         state = self.client.getMultirotorState().kinematics_estimated.orientation
-        yaw, _, _ = airsim.to_eularian_angles(state)
-        yaw = math.degrees(yaw) + 180
+        _, _, yaw = airsim.to_eularian_angles(state)
+        yaw = math.degrees(yaw)
 
         return yaw
 
