@@ -10,7 +10,7 @@ from utils import check_queue
 
 
 model = YOLO("models/yolo11x.pt")  # 使用 YOLOv11 Extra-Large 模型
-small_llm = LLM(init_msg="你是一个执行搜救任务的人工智能助手，请根据信息判断附近是否有被困人员。")
+small_llm = LLM(model=MODEL_MAX_VL,init_msg="你是一个执行搜救任务的人工智能助手，请根据信息判断附近是否有被困人员。")
 large_llm = LLM(model=MODEL_MAX_VL,
                 init_msg="你是一个执行搜救任务的人工智能助手，请根据信息判断附近是否有被困人员，如果有，请从操作库中选择需要执行的操作(每次只可选择1种操作)。")
     
