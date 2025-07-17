@@ -2,6 +2,7 @@ import asyncio
 from ultralytics import YOLO
 import numpy as np
 import cv2
+import time
 
 from llm import LLM
 from config import *
@@ -43,7 +44,7 @@ def yolo_fliter(image: np.uint8) -> tuple[np.uint8, list]:
     return image, detected_classes
 
 
-async def observe(img_queue: asyncio.Queue, action_queue: asyncio.Queue, detected_classes: set, feedback_queue: asyncio.Queue):
+async def observe(img_queue: asyncio.Queue, action_queue: asyncio.Queue, feedback_queue: asyncio.Queue):
     """
     识别场景中的异常并判断是否与任务有关
     Args:
@@ -55,7 +56,6 @@ async def observe(img_queue: asyncio.Queue, action_queue: asyncio.Queue, detecte
     image = await img_queue.get()
     _, new_detected_classes = yolo_fliter(image)
 
-    new_detected_classes.add('background')
     if "person" in new_detected_classes:
         action_queue.put_nowait("moveto")
         feedback = await check_feedback(feedback_queue)
@@ -67,8 +67,8 @@ async def observe(img_queue: asyncio.Queue, action_queue: asyncio.Queue, detecte
         feedback = await check_feedback(feedback_queue)
         action_queue.put_nowait("seek_next")
         feedback = await check_feedback(feedback_queue)
-    
-    return new_detected_classes.copy()
+        await asyncio.sleep(10)
+
 
 async def check_feedback(feedback_queue: asyncio.Queue):
     feedback = None
@@ -78,7 +78,6 @@ async def check_feedback(feedback_queue: asyncio.Queue):
     return feedback
 
 async def main(img_queue: asyncio.Queue, action_queue: asyncio.Queue, feedback_queue: asyncio.Queue):
-    detected_classes = set(['background'])
     while True:
-        detected_classes = await observe(img_queue, action_queue, detected_classes, feedback_queue)
+        await observe(img_queue, action_queue, feedback_queue)
 
