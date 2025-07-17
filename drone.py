@@ -94,7 +94,7 @@ class Drone:
 
         return point_cloud
     
-    def _generate_od(self, o_range: float=1.2):
+    def _generate_od(self, o_range: float=1.3):
         """
         生成障碍分布图
 

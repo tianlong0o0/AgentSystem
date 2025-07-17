@@ -45,6 +45,12 @@ async def moveto(drone: drone.Drone, feedback_queue: asyncio.Queue) -> bool:
         bool:是否跳过下一导航点
     """
     print("移动至被困人员处")
+
+    direction = drone.get_facing()
+    pos = cal_pos(drone.get_pos(), direction, 100)
+    for i in range(10):
+        await drone.move_to_pos_oa(pos)
+
     model = YOLO("models/yolo11x.pt")  # 使用 YOLOv11 Extra-Large 模型
     MIN_HEIGHT = 400
     direction = drone.get_facing()
