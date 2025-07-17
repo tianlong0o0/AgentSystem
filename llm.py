@@ -30,8 +30,8 @@ class LLM:
         self.model = model
         self.api_key = api_key
         self.base_url = base_url
-        self.init_msg = init_msg
         self.messages = [{"role": "system", "content": init_msg}]
+        self.init_msg = init_msg
 
     async def _call_llm_async(self) -> str:
         client = AsyncOpenAI(

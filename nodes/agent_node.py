@@ -112,7 +112,7 @@ async def make_decision(img_queue: asyncio.Queue, action_queue: asyncio.Queue, f
                     large_llm.user_put(feedback)
                     break
                 else:
-                    answer = large_llm.call("未从回答中识别到可执行操作，请输出正确的需要执行的操作。(可执行操作包含:'移动至被困人员处','在附近搜寻被困人员','通知总部找到被困人员','投放紧急救援物资','安抚被困人员')", image)
+                    answer = large_llm.call("未从回答中识别到可执行操作，请输出正确的需要执行的操作。(可执行操作包含:'移动至被困人员处','在被困人员物品周围搜寻被困人员','通知总部找到被困人员','向被困人员发放紧急救援物资','安抚被困人员','继续寻找其他被困人员')", image)
                 
                 feedback = await check_feedback(feedback_queue)
                 image = await img_queue.get()
