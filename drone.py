@@ -23,8 +23,10 @@ class Drone:
         distance = np.linalg.norm(np.array(pos) - np.array(pos_now))
 
         # 计算朝向并移动
-        yaw_mode = airsim.YawMode(is_rate=False, yaw_or_rate=cal_angle(pos_now, pos))
-        self.client.moveToPositionAsync(pos[0], pos[1], pos[2], velocity, yaw_mode=yaw_mode)
+        yaw_mode = airsim.YawMode(is_rate=False,
+                                  yaw_or_rate=cal_angle(pos_now, pos))
+        self.client.moveToPositionAsync(pos[0], pos[1], pos[2],
+                                        velocity, yaw_mode=yaw_mode)
 
         # 异步
         await asyncio.sleep(distance / velocity)
@@ -74,7 +76,8 @@ class Drone:
         """
         使用无人机前置相机拍照
         """
-        responses = self.client.simGetImages([airsim.ImageRequest("0", airsim.ImageType.Scene, False, False)])
+        responses = self.client.simGetImages(
+            [airsim.ImageRequest("0",airsim.ImageType.Scene, False, False)])
         response = responses[0]
         img1d = np.frombuffer(response.image_data_uint8, dtype=np.uint8)
         img_rgb = img1d.reshape(response.height, response.width, 3)

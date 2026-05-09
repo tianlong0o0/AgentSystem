@@ -26,7 +26,8 @@ def match_action(action: str) -> Callable[[drone.Drone, asyncio.Queue], bool]:
     else:
         return None
     
-async def check_action_status(drone: drone.Drone, action_queue: asyncio.Queue, feedback_queue: asyncio.Queue) -> bool:
+async def check_action_status(drone: drone.Drone, action_queue: asyncio.Queue,
+                              feedback_queue: asyncio.Queue) -> bool:
     """
     检查当前无人机行动状态并反馈
 
@@ -44,7 +45,8 @@ async def check_action_status(drone: drone.Drone, action_queue: asyncio.Queue, f
 
     return signal
 
-async def main(drone: drone.Drone, action_queue: asyncio.Queue, feedback_queue: asyncio.Queue):
+async def main(drone: drone.Drone, action_queue: asyncio.Queue,
+               feedback_queue: asyncio.Queue):
     way_points = [
                   [-38, 0, -1],
                   [-56.5, -46, -1],
@@ -62,7 +64,8 @@ async def main(drone: drone.Drone, action_queue: asyncio.Queue, feedback_queue: 
 
             while np.linalg.norm(np.array(target_pos) - np.array(drone.get_pos())) >= 1:
                 await drone.move_to_pos_oa(target_pos)
-                signal = await check_action_status(drone, action_queue, feedback_queue)
+                signal = await check_action_status(drone, action_queue,
+                                                   feedback_queue)
                 if signal: break
 
 

@@ -26,7 +26,8 @@ def encode_image(img: np.uint8, bgr_signal: bool=False) -> str:
 
 
 class LLM:
-    def __init__(self, model: str=MODEL_VL3, api_key: str=API_KEY, base_url: str=BASE_URL, init_msg: str="你是一个人工智能助手。"):
+    def __init__(self, model: str=MODEL_VL3, api_key: str=API_KEY,
+                 base_url: str=BASE_URL, init_msg: str="你是一个人工智能助手。"):
         self.model = model
         self.api_key = api_key
         self.base_url = base_url
@@ -72,7 +73,8 @@ class LLM:
             new_message = {"role": role.value, "content": [
                         {"type": "text", "text": text},
                         {"type": "image_url",
-                        "image_url": {"url": f"data:image/png;base64,{encode_image(image)}"}}
+                        "image_url": {"url": f"data:image/png;base64,"
+                                      f"{encode_image(image)}"}}
                         ]}
 
         self.messages.append(new_message)
